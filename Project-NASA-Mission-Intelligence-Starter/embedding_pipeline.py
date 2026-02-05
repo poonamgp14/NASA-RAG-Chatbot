@@ -475,7 +475,8 @@ class ChromaEmbeddingPipelineTextOnly:
             # Create new collection with embedding function
             collection = self.client.create_collection(
                 name=collection_name,
-                metadata={"description": config["description"], "metadata": config["metadata_fields"]}
+                metadata={"description": config["description"],
+                          "metadata": {"category" : ["apollo11","apollo13", "challenger"]}}
             )
             
             self.collection[collection_key] = collection
