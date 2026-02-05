@@ -22,7 +22,7 @@ class ChromaDBRAGSystem:
         self.collections = {}
 
 
-    def discover_chroma_backends() -> Dict[str, Dict[str, str]]:
+    def discover_chroma_backends(self) -> Dict[str, Dict[str, str]]:
         """Discover available ChromaDB backends in the project directory"""
         backends = {}
         current_dir = Path(".")
@@ -53,7 +53,7 @@ class ChromaDBRAGSystem:
 
         # TODO: Return complete backends dictionary with all discovered collections
 
-    def initialize_rag_system(chroma_dir: str, collection_name: str):
+    def initialize_rag_system(self,chroma_dir: str, collection_name: str):
         """Initialize the RAG system with specified backend (cached for performance)"""
 
         # TODO: Create a chomadb persistentclient ???????
@@ -111,11 +111,12 @@ class ChromaDBRAGSystem:
         embedding_config_model = ''
 
         try: 
-            query_embeddings = self._generate_embeddings(self,[query,],embedding_config_model)
-            results = collection.query(
-                query_embedding=query_embeddings,
-                n_result= n_results,
-                where=my_filter ? my_filter : mission_filter,
+            query_embeddings = self._generate_embeddings(self,[query],embedding_config_model)
+
+            results = self.collections.query(
+                query_embeddings=query_embeddings,
+                n_results = n_results,
+                where = my_filter if my_filter else mission_filter,
                 include=["documents", "distances", "metadatas"]
             )
 
