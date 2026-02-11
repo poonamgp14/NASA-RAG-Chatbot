@@ -10,10 +10,34 @@ import os
 def discover_chroma_backends(self) -> Dict[str, Dict[str, str]]:
     """Discover available ChromaDB backends in the project directory"""
     backends = {}
-    current_dir = Path(".")
+    current_dir = Path("./data_text")
     
     # Look for ChromaDB directories
     # TODO: Create list of directories that match specific criteria (directory type and name pattern)
+
+    for root, dirs, files in os.walk(current_dir):
+        for dir in dirs:
+            if dir.is_dir():
+                try:
+                    client = chromadb.persistentclient(
+                        path=dir.name,
+                        settings=Settings(
+                            anonymized_telemetry=False,
+                            allow_reset=True
+                        )
+                    )
+                    collections = client.list_collections(name=dir.name)
+                    for collection in collections:
+                        collection_info = {}
+                        collection_info['path'] =  os.path.join(root, dir.name)
+                        collection_info['name'] = collection['name']
+                        collection_info['documentCount'] = collection.count() if collection.count() else 0
+                        display_name = os.path.join(root, dir.name) + collection['name']
+                        backends[display_name] = collection_info
+                except Exception as e:
+                    print(f"❌ Error connecting db while scanning directory: {str(e)}")
+                    # return {"documents": [], "distances": [], "metadatas": []}
+    return backends
 
     # TODO: Loop through each discovered directory
         # TODO: Wrap connection attempt in try-except block for error handling
