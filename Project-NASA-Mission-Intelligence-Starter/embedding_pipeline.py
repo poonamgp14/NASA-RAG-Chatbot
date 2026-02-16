@@ -605,7 +605,9 @@ class ChromaEmbeddingPipelineTextOnly:
             for file in files:
                 file_with_chunks = self.process_text_file(file.absolute)
                 mission = file_with_chunks[0]['metadata']['mission']
-                total_apollo11 =+ 1 if mission == 'apollo11' else total_apollo13 =+ 1 if mission == 'apollo13' else total_challenger =+ 1
+                if mission == 'apollo11' : total_apollo11 += 1
+                if mission == 'apollo13' : total_apollo13 += 1
+                if mission == 'challenger' : total_challenger += 1
                 total_chunks_processed = total_chunks_processed + len(file_with_chunks)
                 stats_per_file = self.add_documents_to_collection(file_with_chunks,base_path,update_mode)
                 stats['documents_added'] = stats_per_file['added'] + stats['documents_added']

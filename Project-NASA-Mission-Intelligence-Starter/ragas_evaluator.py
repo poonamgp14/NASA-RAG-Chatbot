@@ -83,7 +83,7 @@ async def evaluate_response_quality(question: str, answer: str, contexts: List[s
 
     scorerResponseRelevancy = ResponseRelevancy(llm=evaluator_llm, embeddings=evaluator_embeddings)
     results['ResponseRelevancy'] =  await scorerResponseRelevancy.single_turn_ascore(sampleResponseRelevancy)
-
+    return results
     # Setup LLM
     # client = AsyncOpenAI()
     # llm = llm_factory("gpt-4o-mini", client=client)
@@ -101,4 +101,3 @@ async def evaluate_response_quality(question: str, answer: str, contexts: List[s
     # )
     # print(f"Faithfulness Score: {result.value}")
 
-    pass
