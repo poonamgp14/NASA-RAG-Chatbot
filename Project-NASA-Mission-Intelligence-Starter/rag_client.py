@@ -7,7 +7,7 @@ from openai import OpenAI
 import os
 
 
-def discover_chroma_backends(self) -> Dict[str, Dict[str, str]]:
+def discover_chroma_backends() -> Dict[str, Dict[str, str]]:
     """Discover available ChromaDB backends in the project directory"""
     backends = {}
     current_dir = Path("./data_text")
@@ -17,56 +17,34 @@ def discover_chroma_backends(self) -> Dict[str, Dict[str, str]]:
 
     for root, dirs, files in os.walk(current_dir):
         for dir in dirs:
-            if dir.is_dir():
-                try:
-                    client = chromadb.persistentclient(
-                        path=dir.name,
-                        settings=Settings(
-                            anonymized_telemetry=False,
-                            allow_reset=True
-                        )
+            print("------")
+            print(dir)
+            try:
+                client = chromadb.PersistentClient(
+                    path=dir,
+                    settings=Settings(
+                        anonymized_telemetry=False,
+                        allow_reset=True
                     )
-                    collections = client.list_collections(name=dir.name)
-                    for collection in collections:
-                        collection_info = {}
-                        collection_info['path'] =  os.path.join(root, dir.name)
-                        collection_info['name'] = collection['name']
-                        collection_info['documentCount'] = collection.count() if collection.count() else 0
-                        display_name = os.path.join(root, dir.name) + collection['name']
-                        backends[display_name] = collection_info
-                except Exception as e:
-                    print(f"❌ Error connecting db while scanning directory: {str(e)}")
+                )
+                collections = client.list_collections()
+                for collection in collections:
+                    collection_info = {}
+                    collection_info['path'] =  os.path.join(root, dir)
+                    collection_info['name'] = collection['name']
+                    collection_info['documentCount'] = collection.count() if collection.count() else 0
+                    display_name = os.path.join(root, dir) + collection['name']
+                    backends[display_name] = collection_info
+            except Exception as e:
+                print(f"❌ Error connecting db while scanning directory: {str(e)}")
                     # return {"documents": [], "distances": [], "metadatas": []}
     return backends
 
-    # TODO: Loop through each discovered directory
-        # TODO: Wrap connection attempt in try-except block for error handling
-        
-            # TODO: Initialize database client with directory path and configuration settings
-            
-            # TODO: Retrieve list of available collections from the database
-            
-            # TODO: Loop through each collection found
-                # TODO: Create unique identifier key combining directory and collection names
-                # TODO: Build information dictionary containing:
-                    # TODO: Store directory path as string
-                    # TODO: Store collection name
-                    # TODO: Create user-friendly display name
-                    # TODO: Get document count with fallback for unsupported operations
-                # TODO: Add collection information to backends dictionary
-        
-        # TODO: Handle connection or access errors gracefully
-            # TODO: Create fallback entry for inaccessible directories
-            # TODO: Include error information in display name with truncation
-            # TODO: Set appropriate fallback values for missing information
-
-    # TODO: Return complete backends dictionary with all discovered collections
-
-def initialize_rag_system(self,chroma_dir: str, collection_name: str):
+def initialize_rag_system(chroma_dir: str, collection_name: str):
     """Initialize the RAG system with specified backend (cached for performance)"""
 
     # TODO: Create a chomadb persistentclient ???????
-    client = chromadb.persistentclient(
+    client = chromadb.PersistentClient(
         path=chroma_dir,
         settings=Settings(
             anonymized_telemetry=False,
@@ -77,16 +55,9 @@ def initialize_rag_system(self,chroma_dir: str, collection_name: str):
     return client.get_collection(name=collection_name)
 
 
-def retrieve_documents(self,collection, query: str, n_results: int = 3, 
+def retrieve_documents(collection, query: str, n_results: int = 3, 
                     mission_filter: Optional[str] = None) -> Optional[Dict]:
     """Retrieve relevant documents from ChromaDB with optional filtering"""
-
-
-
-    # TODO: Initialize filter variable to None (represents no filtering)
-
-    # TODO: Check if filter parameter exists and is not set to "all" or equivalent
-    # TODO: If filter conditions are met, create filter dictionary with appropriate field-value pairs
     my_filter = {}
     if mission_filter:
         print(f"Filters: {mission_filter}")
@@ -103,21 +74,6 @@ def retrieve_documents(self,collection, query: str, n_results: int = 3,
         )
 
         print(f"✅ Found {len(results['documents'][0])} relevant documents")
-
-        # TODO: Return query results to caller
-        # Format results for better readability
-        # formatted_results = {
-        #     "query": query,
-        #     "n_results": len(results['documents'][0]),
-        #     "results": []
-        # }
-            
-        # for i in range(len(results['documents'][0])):
-        #     formatted_results["results"].append({
-        #         "document": results['documents'][0][i],
-        #         "similarity_score": 1 - results['distances'][0][i],  # Convert distance to similarity
-        #         "metadata": results['metadatas'][0][i]
-        #     })
         return results
     except Exception as e:
         print(f"❌ Error searching documents: {str(e)}")

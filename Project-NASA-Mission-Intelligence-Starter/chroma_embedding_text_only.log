@@ -1,0 +1,3 @@
+2026-02-16 21:59:34,286 - INFO - Initializing ChromaDB Embedding Pipeline...
+2026-02-16 21:59:34,400 - INFO - Collection Statistics:
+2026-02-16 21:59:34,404 - INFO - error: No documents in collection

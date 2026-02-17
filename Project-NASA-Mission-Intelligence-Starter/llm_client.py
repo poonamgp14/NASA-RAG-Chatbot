@@ -6,10 +6,13 @@ def generate_response(openai_key: str, user_message: str, context: str,
                      conversation_history: List[Dict], model: str = "gpt-3.5-turbo") -> str:
     """Generate response using OpenAI with context"""
     client = OpenAI(api_key=openai_key)
-
+    # print("-------------")
+    # print(user_message)
 
     try:
-        user_message_prompt = _get_user_message_prompt(context, user_message)
+        print("-------------")
+        print(user_message)
+        user_message_prompt = _get_user_message_prompt(user_message)
 
 
         conversation_history.append({
@@ -36,7 +39,9 @@ def generate_response(openai_key: str, user_message: str, context: str,
         print(f"Error generating response: {e}")
         return error_msg
     
-def _get_user_message_prompt(self, context_text, query:str):
+def _get_user_message_prompt(query: str):
+    print("------_get_user_message_prompt-------")
+    print(query)
     return f"""You are a helpful NASA expert for NASA.
 
 Your role is to assist astronauts, researchers, or even a curious historian with:
@@ -48,9 +53,6 @@ Guidelines:
 - Ask clarifying questions when the customer's intent is unclear
 - If you don't have specific information, ask for it
 - Always prioritize customer satisfaction
-
-Context Documents:
-{context_text}
 
 User Question: {query}
 
