@@ -27,14 +27,17 @@ def discover_chroma_backends() -> Dict[str, Dict[str, str]]:
                         allow_reset=True
                     )
                 )
-                collections = client.list_collections()
-                for collection in collections:
-                    collection_info = {}
-                    collection_info['path'] =  os.path.join(root, dir)
-                    collection_info['name'] = collection['name']
-                    collection_info['documentCount'] = collection.count() if collection.count() else 0
-                    display_name = os.path.join(root, dir) + collection['name']
-                    backends[display_name] = collection_info
+                collection = client.get_or_create_collection(
+                    name=dir,
+                    metadata={"description": "NASA space mission documents with OpenAI Embeddings"}
+                )
+                # for collection in collections:
+                collection_info = {}
+                collection_info['path'] =  os.path.join(root, dir)
+                collection_info['name'] = collection.name
+                collection_info['documentCount'] = collection.count() if collection.count() else 0
+                display_name = os.path.join(root, dir) + collection.name
+                backends[display_name] = collection_info
             except Exception as e:
                 print(f"❌ Error connecting db while scanning directory: {str(e)}")
                     # return {"documents": [], "distances": [], "metadatas": []}

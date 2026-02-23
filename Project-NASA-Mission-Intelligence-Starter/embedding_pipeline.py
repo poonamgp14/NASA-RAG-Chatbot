@@ -115,15 +115,8 @@ class ChromaEmbeddingPipelineTextOnly:
         self.text_splitter = RecursiveCharacterTextSplitter(chunk_size=chunk_size, chunk_overlap=chunk_overlap)
         # texts = text_splitter.split_text(document)
         self.openai_client = OpenAI(
-            api_key=os.getenv("OPENAI_API_KEY")
+            api_key=openai_api_key
         )
-        self.collection = self.client.create_collection(
-                name=collection_name,
-                metadata={"description": "files for apollo11, apollo13, challenger"},
-                embedding_function=OpenAIEmbeddingFunction(
-                    model_name="text-embedding-3-small"
-                )
-    )
     
     def chunk_text(self, text: str, metadata: Dict[str, Any]) -> List[Tuple[str, Dict[str, Any]]]:
         """
@@ -441,51 +434,6 @@ class ChromaEmbeddingPipelineTextOnly:
         
         return filtered_files
     
-    def create_collection(self, collection_key: str) -> chromadb.Collection:
-        """
-        Create a new ChromaDB collection with specified configuration.
-        
-        This method sets up collections with appropriate embedding functions
-        and metadata schemas for different document types.
-        
-        Args:
-            collection_key (str): Key from COLLECTION_CONFIGS
-            
-        Returns:
-            chromadb.Collection: The created collection object
-        """
-        if collection_key not in COLLECTION_CONFIGS:
-            raise ValueError(f"Unknown collection configuration: {collection_key}")
-            
-        config = COLLECTION_CONFIGS[collection_key]
-        collection_name = config["name"]
-        
-        print(f"\n📁 Creating collection: {collection_name}")
-        print(f"   Description: {config['description']}")
-        print(f"   Metadata fields: {config['metadata_fields']}")
-        
-        try:
-            # Delete existing collection if it exists (for development)
-            try:
-                self.client.delete_collection(collection_name)
-                print(f"Deleted existing collection")
-            except:
-                pass
-            
-            # Create new collection with embedding function
-            collection = self.client.create_collection(
-                name=collection_name,
-                metadata={"description": config["description"],
-                          "metadata": {"category" : ["apollo11","apollo13", "challenger"]}}
-            )
-            
-            self.collection[collection_key] = collection
-            print(f"   ✅ Collection created successfully")
-            return collection
-            
-        except Exception as e:
-            print(f"   ❌ Error creating collection: {str(e)}")
-            raise
     
     def add_documents_to_collection(self, documents: List[Tuple[str, Dict[str, Any]]], 
                                    file_path: Path,batch_size: int = 50, 
@@ -592,6 +540,8 @@ class ChromaEmbeddingPipelineTextOnly:
         # TODO: Update statistics
         # TODO: Handle errors gracefully
         files = self.scan_text_files_only(base_path)
+        print('=-------file----------')
+        print(files)
         stats['files_processed'] = len(files)
         total_chunks_processed = 0
         total_errors = 0
@@ -603,6 +553,8 @@ class ChromaEmbeddingPipelineTextOnly:
         }
         try:
             for file in files:
+                print('file')
+                print(file.absolute)
                 file_with_chunks = self.process_text_file(file.absolute)
                 mission = file_with_chunks[0]['metadata']['mission']
                 if mission == 'apollo11' : total_apollo11 += 1
@@ -649,7 +601,7 @@ class ChromaEmbeddingPipelineTextOnly:
             n_results = n_results
         )
     
-    def get_collection_stats(self) -> Dict[str, Any]:
+    def get_collection_stats(self, api_key) -> Dict[str, Any]:
         """Get detailed statistics about the collection"""
         try:
             # Get all documents to analyze
@@ -730,7 +682,7 @@ def main():
     # If stats only, show collection statistics and exit
     if args.stats_only:
         logger.info("Collection Statistics:")
-        stats = pipeline.get_collection_stats()
+        stats = pipeline.get_collection_stats(args.openai_key)
         for key, value in stats.items():
             logger.info(f"{key}: {value}")
         return
